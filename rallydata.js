@@ -5,7 +5,7 @@ RallyData = function() {
     this.startOdo  = null;
 
     this.nextPoint = 0;
-    this.path      = [ {"dist": 0, "avgSpeed": 0} ];
+    this.path      = [];
 };
 
 RallyData.prototype = {
@@ -48,40 +48,57 @@ RallyData.prototype = {
                           "avgSpeed":      currentPathPoint.avgSpeed,
                           "expectedDelay": 0,
                           "comment":       "checkpoint",
-                          "timeReset":     realTime,
+                          "timeReset":     true,
                           "realOdo":       realOdo,
                           "realTime":      realTime,
                           "claimedDelay":  claimedDelay
                         };
 
-        this.nextPoint++;
+        this.path.splice(nextPoint, 0, pathPoint);
 
-        this.timeReset.push( { "realOdo": realOdo, "realTime": realTime } );
+        this.nextPoint++;
     },
 
     //-------------------------------------
 
-    computeExpectedOdoAndTime: function(pathElement) {
+    computeExpectedOdoAndTime: function(pathElement, onlySome) {
         var expectedData = [];
 
-        var realOdo  = this.startOdo;
-        var realTime = this.startTime;
+        var expectedOdo  = this.startOdo;
+        var expectedTime = this.startTime;
 
-        for (var i = 0; i < this.path.length; i++) {
-            var pathPoint = path[i];
-
-            var expectedRealOdo = pathPoint.realOdo ?
-
-
-
+        var windowSize = 100;
+        if (onlySome) windowSize = 10;
+        var from = Math.max(0,                this.nextPoint - windowSize);
+        var to   = Math.min(this.path.length, this.nextPoint + windowSize*2);
+        if (to < from + windowSize*3) {
+            from = Math.max(0, to - windowSize*3);
+            to   = math.min(this.path.length, from + windowSize*3);
         }
 
+        for (var i = from; i < to; i++) {
+            var pathPoint = path[i];
 
-    },
+            expectedOdo  = pathPoint.timeReset ? pathPoint.realOdo  : this._computeExpectedOdo( expectedOdo, pathPoint.dist );
+            expectedTime = pathPoint.timeReset ? pathPoint.realTime : this._computeExpectedTime( expectedTime, pathPoint.dist, pathPoint.avgSpeed, pathPoint.delay );
 
-    getExpectedCurrentInfo: function( currentTime )
-    {
+            var element = { "comment":      pathPoint.comment,
+                            "dist":         pathPoint.dist,
+                            "acgSpeed":     pathPoint.avgSpeed,
+                            "delay":        pathPoint.delay,
+                            "expectedOdo":  expectedOdo,
+                            "expectedTime": expectedTime,
+                            "realOdo":      pathPoint.hasOwnProperty("realOdo")  ? pathPoint.realOdo : null,
+                            "realTime":     pathPoint.hasOwnProperty("realTime") ? pathPoint.realTime : null };
 
+            var str = this._toString(element);
+
+            element["asString"] = str;
+
+            expectedData.push( element);
+        }
+
+        return { "next": this.nextPoint, "data": expectedData };
     },
 
     _computeExpectedOdo: function( knownRealOdoPoint, distanceFromThatPoint )
@@ -101,26 +118,6 @@ RallyData.prototype = {
     _addTime: function( time1, diffInSeconds )
     {
         return new Date(time1.getTime() + diffInSeconds*1000);
-    },
-
-    _timeBeforeTime: function
-};
-
-
-PathElement = function( distance, avgSpeed, expectedOdometer, expectedTime, realOdometer, realTime, isReset ) {
-
-    this.realOdometer = realOdometer;
-    this.realTime     = realTime;
-
-    this.expectedOdometer = expectedOdometer;
-    this.expectedTime     = expectedTime;
-
-    this.isResume = isResume;
-};
-
-PathElement.prototype = {
-    toString: function() {
-
     }
 };
 

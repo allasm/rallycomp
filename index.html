@@ -12,17 +12,52 @@
 
         function show()
         {
+
+        }
+
+        function displayPath( path, currentLeg )
+        {
+            var str = "";
+            for (var i = 0; i < path.length; i++ ) {
+                str += path.asString + "\n";
+            }
+
+            document.getElementById("path").innerHTML = '<pre>'+ str + '</pre>';
+        }
+
+        function onPassPoint(form) {
+            var inputs   = form.getElementsByTagName('input');
+            var odoMeter = inputs[0].value;
+
+            return false;
+        }
+
+        function checkOdoDist (element) {
+        }
+
+        function display_controls() {
+            document.getElementById("controls").innerHTML = "\
+                <form method=\"post\" action=\"\" onsubmit=\"return onPassPoint(this)\">\
+                    realOdo: <input type=\"text\" style=\"width: 40px\" name=\"realodo\" id=\"realodo1\" onkeyup=\"checkOdoDist(this)\"/>\
+                    <button type=\"submit\" id=\"on_pass\">Pass point</button>\
+                </form>\
+                <form method=\"post\" action=\"\" onsubmit=\"return onCheckpoint(this)\">\
+                    <button type=\"submit\" id=\"on_checkpoint\">Checkpoint</button>\
+                </form>";
         }
     </script>
 
 </head>
 <body onload="showGraph()">
-    Input Graph:
-    <div id="input"></div>
+    Current:
+    <div id="current"></div>
+    Path:
+    <div id="path"></div>
+    <br><br>
     Controls:
-    <div id="control"></div>
-    Output:
-    <div id="output"></div>
+    <div id="controls"></div>
+    Input:
+    <div id="input"></div>
 </body>
 </html>
 
